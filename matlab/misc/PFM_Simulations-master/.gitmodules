@@ -1,0 +1,12 @@
+[submodule "Utilities/export_fig"]
+	path = Utilities/export_fig
+	url = https://github.com/altmany/export_fig.git
+[submodule "Utilities/notBoxPlot"]
+	path = Utilities/notBoxPlot
+	url = https://github.com/raacampbell/notBoxPlot.git
+[submodule "Utilities/Violinplot"]
+	path = Utilities/Violinplot
+	url = https://github.com/bastibe/Violinplot-Matlab.git
+[submodule "Utilities/hungarian"]
+	path = Utilities/hungarian
+	url = https://github.com/ondrejdee/hungarian
