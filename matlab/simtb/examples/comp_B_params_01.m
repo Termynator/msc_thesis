@@ -19,13 +19,15 @@
 %% OUTPUT PARAMETERS
 %-------------------------------------------------------------------------------
 % Directory to save simulation parameters and output
+
 %out_path = '/home/zeke/Programming/msc_thesis/simtb_data/diff_comp/mats/';
-%out_path = '/disks/Programming/simtb_ds/diff_comp/mats/';
-out_path = '/disks/Programming/simtb_ds/diff_comp/ica_niis/';
+out_path = '/disks/Programming/simtb_ds/diff_comp/mats/';
+%out_path = '/disks/Programming/simtb_ds/diff_comp/ica_niis/';
+
 % Prefix for saving output
-prefix = 'A_dc';
+prefix = 'B_dc';
 % FLAG to write data in NIFTI format rather than matlab
-saveNII_FLAG = 1;
+saveNII_FLAG = 0;
 % Option to display output and create figures throughout the simulations
 verbose_display = 0;
 %-------------------------------------------------------------------------------
@@ -41,7 +43,7 @@ simtb_rand_seed(seed);          % set the seed
 %-------------------------------------------------------------------------------
 M  = 200;   % number of subjects    
 % nC is the number of components defined below, nC = length(SM_source_ID);
-nV = 100; %148 % number of voxels; dataset will have [nV x nV] voxels.           
+nV = 100; % number of voxels; dataset will have [nV x nV] voxels.           
 nT = 30; % number of time points           
 TR = 2;   % repetition time 
 %-------------------------------------------------------------------------------
@@ -50,9 +52,9 @@ TR = 2;   % repetition time
 %-------------------------------------------------------------------------------
 % Choose the sources. To launch a stand-alone GUI:
 % >> simtb_pickSM 
-SM_source_ID = [       3  4  5  6  7  8  9     ...
+SM_source_ID = [    2  3  4  5  6  7  8  9     ...
                 11 12    14 15 16 17 18 19 20  ...
-                21 22 23 24 25 26 27 28 29 30]; % all but (1, 2, 10, 13)
+                21 22 23 24 25 26 27 28 29 30]; % all but (1, 10, 13)
 
 nC = length(SM_source_ID);  % number of components            
 
@@ -243,11 +245,11 @@ D_CNR = rand(1,M)*(maxCNR-minCNR) + minCNR;
 
 %% MOTION 
 %-------------------------------------------------------------------------------
-D_motion_FLAG = 1;              % 1=motion, 0=no motion: 0 changes dim of output why?????
+D_motion_FLAG = 1;              % 1=motion, 0=no motion
 D_motion_TRANSmax = 0;       % max translation, proportion of entire image
 D_motion_ROTmax = 0;            % max rotation, in degrees
 D_motion_deviates = ones(M,3);
 %-------------------------------------------------------------------------------
 % END of parameter definitions
 
-%save('/home/zeke/Programming/msc_thesis/simtb_data/diff_comp/A.mat', 'ans')
+%save('/home/zeke/Programming/msc_thesis/simtb_data/diff_comp/B.mat', 'ans')

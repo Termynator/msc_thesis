@@ -19,13 +19,15 @@
 %% OUTPUT PARAMETERS
 %-------------------------------------------------------------------------------
 % Directory to save simulation parameters and output
+
 %out_path = '/home/zeke/Programming/msc_thesis/simtb_data/diff_comp/mats/';
-%out_path = '/disks/Programming/simtb_ds/diff_comp/mats/';
-out_path = '/disks/Programming/simtb_ds/diff_comp/ica_niis/';
+out_path = '/disks/Programming/simtb_ds/diff_comp/mats/';
+%out_path = '/disks/Programming/simtb_ds/diff_comp/ica_niis/';
+
 % Prefix for saving output
-prefix = 'A_dc';
+prefix = 'A_l_dc';
 % FLAG to write data in NIFTI format rather than matlab
-saveNII_FLAG = 1;
+saveNII_FLAG = 0;
 % Option to display output and create figures throughout the simulations
 verbose_display = 0;
 %-------------------------------------------------------------------------------
@@ -50,6 +52,7 @@ TR = 2;   % repetition time
 %-------------------------------------------------------------------------------
 % Choose the sources. To launch a stand-alone GUI:
 % >> simtb_pickSM 
+
 SM_source_ID = [       3  4  5  6  7  8  9     ...
                 11 12    14 15 16 17 18 19 20  ...
                 21 22 23 24 25 26 27 28 29 30]; % all but (1, 2, 10, 13)
@@ -62,14 +65,14 @@ nC = length(SM_source_ID);  % number of components
 comp_AUD1  = find(SM_source_ID == 27);
 comp_AUD2  = find(SM_source_ID == 28);
 % DMN: negative activation to task events
-comp_DMN   = find(SM_source_ID ==  8);
+%comp_DMN   = find(SM_source_ID ==  8);
 % Bilateral frontal: positive activation to for targets and novels
 comp_BF    = find(SM_source_ID == 24);
 % Frontal: 1 second temporal delay from bilateral frontal
-comp_F1    = find(SM_source_ID ==  4);
-comp_F2    = find(SM_source_ID ==  5);
+%comp_F1    = find(SM_source_ID ==  4);
+%comp_F2    = find(SM_source_ID ==  5);
 % Precuneus: activation only to targets
-comp_P     = find(SM_source_ID ==  7);
+%comp_P     = find(SM_source_ID ==  7);
 % Dorsal Attention Network: activation to novels more than targets
 comp_DAN   = find(SM_source_ID == 18);
 % Hippocampus: activation only to novels
@@ -84,12 +87,12 @@ comp_CSF2  = find(SM_source_ID == 15);
 comp_WM1   = find(SM_source_ID == 16);
 comp_WM2   = find(SM_source_ID == 17);
 % Medial Frontal: has lower baseline intensity (signal dropout)
-comp_MF    = find(SM_source_ID ==  6);
+%comp_MF    = find(SM_source_ID ==  6);
 
 % compile list of all defined components of interest
-complist = [comp_AUD1 comp_AUD2 comp_DMN comp_BF  comp_F1 comp_F2 ...
-            comp_P    comp_DAN  comp_H1  comp_H2  comp_M1 comp_M2 ...
-            comp_CSF1 comp_CSF2 comp_WM1 comp_WM2 comp_MF];
+complist = [comp_AUD1 comp_AUD2 comp_BF   ...
+            comp_DAN  comp_H1  comp_H2  comp_M1 comp_M2 ...
+            comp_CSF1 comp_CSF2 comp_WM1 comp_WM2 ];
 %-------------------------------------------------------------------------------
 
 %% COMPONENT PRESENCE
@@ -132,8 +135,8 @@ P(7) = 32;   % length of kernel (seconds)
 [TC_source_params{:}] = deal(P);
 
 % Implement 1 second onset delay for components comp_F1 and comp_F2
-P(6) = P(6) + 1;  % delay by 1s
-[TC_source_params{:,[comp_F1 comp_F2]}] = deal(P);
+%P(6) = P(6) + 1;  % delay by 1s
+%[TC_source_params{:,[comp_F1 comp_F2]}] = deal(P);
 
 sourceType = 3; % CSF components use spike model
 % Generate a random set of parameters for TC model 3
@@ -165,26 +168,30 @@ TC_event_same_FLAG = 0;  % 1=event timing will be the same for all subjects
 % event probabilities (0.6 standards, 0.075 targets and novels, 0.05 CSF spikes)
 TC_event_prob = [0.6, 0.075, 0.075, 0.05];  % an 8:1:1 ratio 
 
+%complist = [comp_AUD1 comp_AUD2 comp_BF   ...
+%            comp_DAN  comp_H1  comp_H2  comp_M1 comp_M2 ...
+%            comp_CSF1 comp_CSF2 comp_WM1 comp_WM2 ];
+
 % initialize [nC x TC_event_n] matrix of task-modulation amplitudes
 TC_event_amp = zeros(nC,TC_event_n); 
 % event type 1: standard tone
 TC_event_amp([comp_AUD1 comp_AUD2],              1) = 1.0; % moderate task-modulation %1
-TC_event_amp([comp_BF comp_F1 comp_F2 comp_DAN], 1) = 0.7; % mild 
-TC_event_amp([comp_DMN],                         1) =-0.3; % negative weak
+TC_event_amp([comp_BF comp_DAN],                 1) = 0.7; % mild 
+%TC_event_amp([comp_DMN],                         1) =-0.3; % negative weak
 % event type 2: target tone
 TC_event_amp([comp_AUD1 comp_AUD2],              2) = 1.2; % strong
-TC_event_amp([comp_BF comp_F1 comp_F2],          2) = 1.0; % moderate
+TC_event_amp([comp_BF ],                         2) = 1.0; % moderate
 TC_event_amp([comp_DAN],                         2) = 0.8; % mild
-TC_event_amp([comp_P],                           2) = 0.5; % weak
+%TC_event_amp([comp_P],                           2) = 0.5; % weak
 TC_event_amp([comp_M1 comp_M2],                  2) = 1.0; % moderate
-TC_event_amp([comp_DMN],                         2) =-0.3; % negative weak
+%TC_event_amp([comp_DMN],                         2) =-0.3; % negative weak
 % event type 3: novel tone
 TC_event_amp([comp_AUD1 comp_AUD2],              3) = 1.5; % very strong
-TC_event_amp([comp_BF comp_F1 comp_F2],          3) = 1.0; % moderate
+TC_event_amp([comp_BF],                          3) = 1.0; % moderate
 TC_event_amp([comp_DAN],                         3) = 1.2; % strong
 TC_event_amp([comp_H1 comp_H2],                  3) = 0.8; % mild
 TC_event_amp([comp_M1 comp_M2],                  3) = 0.5; % weak
-TC_event_amp([comp_DMN],                         3) =-0.3; % negative weak
+%TC_event_amp([comp_DMN],                         3) =-0.3; % negative weak
 % event type 4: 'spikes' in CSF (not related to task)
 TC_event_amp([comp_CSF1 comp_CSF2],              4) = 1.0; % moderate
 %-------------------------------------------------------------------------------
@@ -197,12 +204,12 @@ TC_unique_prob = 0.2*ones(1,nC); % [1 x nC] prob of unique event at each TR
 TC_unique_amp  = ones(M,nC);     % [M x nC] matrix of amplitude of unique events
 % smaller unique activations for task-modulated and CSF components
 TC_unique_amp(:,[comp_AUD1 comp_AUD2])              = 0.2;
-TC_unique_amp(:,[comp_BF comp_F1 comp_F2])          = 0.3;
+TC_unique_amp(:,[comp_BF ])                         = 0.3;
 TC_unique_amp(:,[comp_DAN])                         = 0.5;
-TC_unique_amp(:,[comp_P])                           = 0.5;
+%TC_unique_amp(:,[comp_P])                           = 0.5;
 TC_unique_amp(:,[comp_M1 comp_M2])                  = 0.2;
 TC_unique_amp(:,[comp_H1 comp_H2])                  = 0.4;
-TC_unique_amp(:,[comp_DMN])                         = 0.3; 
+%TC_unique_amp(:,[comp_DMN])                         = 0.3; 
 TC_unique_amp(:,[comp_CSF1 comp_CSF2])              = 0.05; %very small
 %-------------------------------------------------------------------------------
 

@@ -14,21 +14,21 @@ ica_nii_path = '/disks/Programming/simtb_ds/01_EXPERIMENT/ica_niis/';
 
 
 % Param files and make mats
-sP = simtb_create_sP('comp_A_params');
+sP = simtb_create_sP('comp_A_params_01');
 sP.out_path = mat_path;
 simtb_main(sP);
 
-sP = simtb_create_sP('comp_B_params');
+sP = simtb_create_sP('comp_B_params_01');
 sP.out_path = mat_path;
 simtb_main(sP);
 
 %make ica niis
-sP = simtb_create_sP('comp_A_params');
+sP = simtb_create_sP('comp_A_params_01');
 sP.out_path = ica_nii_path;
 sP.saveNII_FLAG = 1;
 simtb_main(sP);
 
-sP = simtb_create_sP('comp_B_params');
+sP = simtb_create_sP('comp_B_params_01:wq');
 sP.out_path = ica_nii_path;
 sP.saveNII_FLAG = 1;
 simtb_main(sP);
