@@ -11,26 +11,31 @@ mat_path = '/disks/Programming/simtb_ds/01_EXPERIMENT/mats/';
 spk_nii_path = '/disks/Programming/simtb_ds/01_EXPERIMENT/spk_niis/';
 ica_nii_path = '/disks/Programming/simtb_ds/01_EXPERIMENT/ica_niis/';
 
-
+spk_resolution = 80;
+ica_resolution = 150;
 
 % Param files and make mats
 sP = simtb_create_sP('comp_A_params_01');
 sP.out_path = mat_path;
+sP.nV = spk_resolution;
 simtb_main(sP);
 
 sP = simtb_create_sP('comp_B_params_01');
 sP.out_path = mat_path;
+sP.nV = spk_resolution;
 simtb_main(sP);
 
 %make ica niis
 sP = simtb_create_sP('comp_A_params_01');
 sP.out_path = ica_nii_path;
 sP.saveNII_FLAG = 1;
+sP.nV = ica_resolution;
 simtb_main(sP);
 
 sP = simtb_create_sP('comp_B_params_01 ');
 sP.out_path = ica_nii_path;
 sP.saveNII_FLAG = 1;
+sP.nV = ica_resolution;
 simtb_main(sP);
 
 

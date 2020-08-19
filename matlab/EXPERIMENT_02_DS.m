@@ -9,23 +9,30 @@ mat_path =     '/disks/Programming/simtb_ds/02_EXPERIMENT/mats/';
 spk_nii_path = '/disks/Programming/simtb_ds/02_EXPERIMENT/spk_niis/';
 ica_nii_path = '/disks/Programming/simtb_ds/02_EXPERIMENT/ica_niis/';
 
+spk_resolution = 80;
+ica_resolution = 150;
+
 sP = simtb_create_sP('comp_A_params_large_diff_02');
 sP.out_path = mat_path;
+sp.nV = spk_resolution;
 simtb_main(sP);
 
 sP = simtb_create_sP('comp_B_params_02');
 sP.out_path = mat_path;
+sp.nV = spk_resolution;
 simtb_main(sP);
 
 %make ica niis
 sP = simtb_create_sP('comp_A_params_large_diff_02');
 sP.out_path = ica_nii_path;
 sP.saveNII_FLAG = 1;
+sp.nV = ica_resolution;
 simtb_main(sP);
 
 sP = simtb_create_sP('comp_B_params_02');
 sP.out_path = ica_nii_path;
 sP.saveNII_FLAG = 1;
+sp.nV = ica_resolution;
 simtb_main(sP);
 
 timeStepS = 0.001;                  % 1 msec
