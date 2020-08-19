@@ -28,7 +28,7 @@ sP.out_path = ica_nii_path;
 sP.saveNII_FLAG = 1;
 simtb_main(sP);
 
-sP = simtb_create_sP('comp_B_params_01');
+sP = simtb_create_sP('comp_B_params_01 ');
 sP.out_path = ica_nii_path;
 sP.saveNII_FLAG = 1;
 simtb_main(sP);
