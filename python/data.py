@@ -62,7 +62,7 @@ class Events(object):
             cv2.waitKey(1)
 
         while frame_start < t_max:
-            #with timer.Timer() as em_playback_timer:
+            
             frame_data = self.data[(self.data.ts >= frame_start) & (self.data.ts < frame_end)]
             show_em_frame(frame_data)
             frame_start = frame_end + 1
@@ -87,7 +87,7 @@ class Events(object):
             if frame_data.size > 0:
                 td_img.fill(128)
 
-                #with timer.Timer() as em_playback_timer:
+                
                 for datum in np.nditer(frame_data):
                     td_img[datum['y'].item(0), datum['x'].item(0)] = datum['p'].item(0)
                 #print 'prepare td frame by iterating events took %s seconds'
@@ -105,15 +105,10 @@ class Events(object):
 
     def to_frame(self, nTimeBins):
         frame = np.zeros((self.height, self.width, nTimeBins))
-        for i in range(self.data.shape[0]):
-            x = self.data.x[i]
-            y = self.data.y[i]
-            p = self.data.p[i]
-            ts = self.data.ts[i]
-            t_bin = int(ts / (self.data.ts.max() / nTimeBins))
-            if t_bin >= nTimeBins:
-                t_bin = nTimeBins - 1
-            frame[y, x, t_bin] = 1 if p else -1
+        x, y, p, ts = self.data.x, self.data.y, self.data.p, self.data.ts
+        t_bin = (ts / (ts.max() / nTimeBins)).astype(int)
+        t_bin[t_bin >= nTimeBins] = nTimeBins - 1
+        frame[y, x, t_bin] = np.where(p, 1, -1)
         
         # Pad the frame to 48x48
         padded_frame = np.zeros((48, 48))
@@ -143,7 +138,7 @@ def read_dataset(filename):
     #Everything else is a proper td spike
     td_indices = np.where(all_y != 240)[0]
 
-    td = Events(td_indices.size, 34, 34)
+    td = Events(td_indices.size, width=all_x.max() + 1, height=all_y.max() + 1)
     td.data.x = all_x[td_indices]
     td.width = td.data.x.max() + 1
     td.data.y = all_y[td_indices]
@@ -176,7 +171,7 @@ class caltechDataset(Dataset):
 
     inputSpikes = snn.io.read2Dspikes(
                     input_index
-                    ).toSpikeTensor(torch.zeros((2,34,34,self.nTimeBins)),
+                    ).toSpikeTensor(torch.zeros((2, self.height, self.width, self.nTimeBins)),
                     samplingTime=self.samplingTime)
     desiredClass = torch.zeros((len(self.classes), 1, 1, 1))
 
@@ -188,35 +183,7 @@ class caltechDataset(Dataset):
   def __len__(self):
       return len(self.samples[0,:])
 
-# Network definition
-#class Network(torch.nn.Module):
-#    def __init__(self, netParams):
-#        super(Network, self).__init__()
-#        # initialize slayer
-#        self.netParams = netParams
-#        slayer = snn.layer(self.netParams['neuron'], self.netParams['simulation'])
-#        self.slayer = slayer
-#        self.NUM_CLASSES = self.netParams['training']['num_classes']
-#        # define network functions
-#        self.conv1 = slayer.conv(2, 16, 5, padding=1)
-#        self.conv2 = slayer.conv(16, 32, 3, padding=1)
-#        self.conv3 = slayer.conv(32, 64, 3, padding=1)
-#        self.pool1 = slayer.pool(2)
-#        self.pool2 = slayer.pool(2)
-#        self.fc1   = slayer.dense((8, 8, 64),self.NUM_CLASSES)
-#
-#    def forward(self, spikeInput):
-#        spikeLayer1 = self.slayer.spike(self.conv1(self.slayer.psp(spikeInput ))) # 32, 32, 16
-#        spikeLayer2 = self.slayer.spike(self.pool1(self.slayer.psp(spikeLayer1))) # 16, 16, 16
-#        spikeLayer3 = self.slayer.spike(self.conv2(self.slayer.psp(spikeLayer2))) # 16, 16, 32
-#        spikeLayer4 = self.slayer.spike(self.pool2(self.slayer.psp(spikeLayer3))) #  8,  8, 32
-#        spikeLayer5 = self.slayer.spike(self.conv3(self.slayer.psp(spikeLayer4))) #  8,  8, 64
-#        spikeOut    = self.slayer.spike(self.fc1  (self.slayer.psp(spikeLayer5))) #  10
-#
-#        return spikeOut
-#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
 # SimTB Dataset
 
 class simtbDataset(Dataset):
