@@ -30,3 +30,6 @@ python/rubbish/
 requirements.txt
 requirements_cleaned.txt
 requirements_nov.txt
+
+# Ignore compiled binaries
+simtb_v18_stand_alone_Linux_x86_64/
