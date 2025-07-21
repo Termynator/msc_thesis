@@ -49,6 +49,23 @@ TC_block_amp(4,1) = -1;  % Comp 4 is negatively modulated by condition 1
 TC_block_amp(4,2) = 1.5; % Comp 4 is strongly modulated by condition 2
 %-------------------------------------------------------------------------------
 
+%% UNIQUE EVENTS
+%-------------------------------------------------------------------------------
+TC_unique_FLAG = 1; % 1 = include unique events
+TC_unique_prob = 0.2*ones(1,nC); % [1 x nC] prob of unique event at each TR
+
+TC_unique_amp  = ones(M,nC);     % [M x nC] matrix of amplitude of unique events
+% smaller unique activations for task-modulated and CSF components
+TC_unique_amp(:,[comp_AUD1 comp_AUD2])              = 0.2;
+TC_unique_amp(:,[comp_BF comp_F1 comp_F2])          = 0.3;
+TC_unique_amp(:,[comp_DAN])                         = 0.5;
+TC_unique_amp(:,[comp_P])                           = 0.5;
+TC_unique_amp(:,[comp_M1 comp_M2])                  = 0.2;
+TC_unique_amp(:,[comp_H1 comp_H2])                  = 0.4;
+TC_unique_amp(:,[comp_DMN])                         = 0.3; 
+TC_unique_amp(:,[comp_CSF1 comp_CSF2])              = 0.05; %very small
+
+
 %% NOISE
 %-------------------------------------------------------------------------------
 D_CNR = 2*ones(1,M);   % Increase the CNR to be 2 for all subjects

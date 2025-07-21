@@ -13,18 +13,20 @@ from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-path = '/home/zeke/Programming/msc_thesis-master/'
+path = '/disks/Programming/msc_thesis-master/'
 
-import slayerSNN as snn
-sys.path.append(path + 'python/slayerPytorch/src/')
-from learningStats import learningStats
-
-from data import simtbDataset,Network
-
-big_disk_data_path = '/disks/Programming/simtb_ds/01_EXPERIMENT/spk_niis/'
+big_disk_data_path = os.path.join(path, 'simtb_ds/01_EXPERIMENT/spk_niis/')
 npy_path = 'numpys/'
 model_path = 'models/'
 yaml_path = 'yamls/'
+
+import slayerSNN as snn
+sys.path.append(path + 'python/slayerPytorch/src/')
+from slayerPytorch.src.learningStats import learningStats
+
+from data import simtbDataset,Network
+
+checkpoint_path = os.path.join(path, model_path, 'slayer_checkpoint.pth')
 
 np.random.seed(42)
 
@@ -72,8 +74,28 @@ error = snn.loss(netParams).to(device)
 optimizer = torch.optim.Adam(net.parameters(), lr = 0.01, amsgrad = True)
 stats = learningStats()
 
-for epoch in range(200):
+start_epoch = 0
+best_loss = float('inf')
+patience = 5
+patience_counter = 0
+total_training_time = 0
+
+if os.path.exists(checkpoint_path):
+    print(f"Loading checkpoint from {checkpoint_path}")
+    checkpoint = torch.load(checkpoint_path)
+    net.load_state_dict(checkpoint['model_state_dict'])
+    optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    stats = checkpoint['stats']
+    start_epoch = checkpoint['epoch'] + 1
+    best_loss = checkpoint['best_loss']
+    patience_counter = checkpoint['patience_counter']
+    total_training_time = checkpoint['total_training_time']
+    print(f"Resuming training from epoch {start_epoch} with best loss {best_loss:.4f}")
+
+for epoch in range(start_epoch, 200):
     tSt = datetime.now()
+    if epoch == start_epoch:
+        total_training_time = 0
     
     # Training loop.
     for i, (input, target, label) in enumerate(trainLoader, 0):
@@ -139,6 +161,47 @@ for epoch in range(200):
     
     # Update stats.
     stats.update()
+
+    # Early stopping check
+    current_test_loss = stats.testing.lossLog[-1]
+    if current_test_loss < best_loss:
+        best_loss = current_test_loss
+        patience_counter = 0
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': net.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'stats': stats,
+            'best_loss': best_loss,
+            'patience_counter': patience_counter,
+            'total_training_time': total_training_time + (datetime.now() - tSt).total_seconds(),
+        }, checkpoint_path)
+    else:
+        patience_counter += 1
+        if patience_counter >= patience:
+            print(f'Early stopping after {epoch+1} epochs due to no improvement in test loss.')
+            break
+    
+    total_training_time += (datetime.now() - tSt).total_seconds()
+
+# Load best model for final evaluation
+if os.path.exists(checkpoint_path):
+    checkpoint = torch.load(checkpoint_path)
+    net.load_state_dict(checkpoint['model_state_dict'])
+    stats = checkpoint['stats']
+    total_training_time = checkpoint['total_training_time']
+
+final_test_loss = stats.testing.lossLog[-1]
+final_accuracy = stats.testing.accuracyLog[-1]
+
+print(f'Final Test Loss: {final_test_loss:.4f}')
+print(f'Final Test Accuracy: {final_accuracy:.2f}%')
+print(f'Training Time: {total_training_time:.2f} seconds')
+
+with open('slayer_performance_metrics.txt', 'w') as f:
+    f.write(f'Final Test Loss: {final_test_loss:.4f}\n')
+    f.write(f'Final Test Accuracy: {final_accuracy:.2f}%\n')
+    f.write(f'Training Time: {total_training_time:.2f} seconds\n')
 
 
 # Plot the results.

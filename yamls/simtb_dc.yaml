@@ -1,6 +1,6 @@
 simulation:
     Ts: 1.0
-    tSample: 300
+    tSample: 150
     nSample: 12
 neuron:
     type:     SRMALPHA
@@ -22,7 +22,7 @@ training:
         #in:      /home/zeke/Programming/msc_thesis/simtb_data/diff_comp/niis/
         #train:   /home/zeke/Programming/msc_thesis/numpys/trn_simtb_dc.npy
         #test:    /home/zeke/Programming/msc_thesis/numpys/tst_simtb_dc.npy
-        in:      /disks/Programming/simtb_ds/diff_comp/simtb_data/diff_comp/niis/
-        train:   /home/zeke/Programming/msc_thesis-master/numpys/trn_simtb_dc.npy
-        test:    /home/zeke/Programming/msc_thesis-master/numpys/tst_simtb_dc.npy
+        in:      /disks/Programming/msc_thesis-master/simtb_ds/01_EXPERIMENT/spk_niis/
+        train:   /disks/Programming/msc_thesis-master/numpys/trn_simtb_dc.npy
+        test:    /disks/Programming/msc_thesis-master/numpys/tst_simtb_dc.npy
 

@@ -54,7 +54,7 @@ TR = 2;   % repetition time
 % >> simtb_pickSM 
 
 SM_source_ID = [11 12    14 15 16 17 18 19 20  ...
-                21 22 23 24 25 26 27 28 29 30]; % all but (1, 2, 10, 13)
+                21 22 23 24 25 26 27 28 29 30]; 
 
 nC = length(SM_source_ID);  % number of components            
 
