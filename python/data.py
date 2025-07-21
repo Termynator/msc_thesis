@@ -103,6 +103,25 @@ class Events(object):
         cv2.destroyAllWindows()
         return
 
+    def to_frame(self, nTimeBins):
+        frame = np.zeros((self.height, self.width, nTimeBins))
+        for i in range(self.data.shape[0]):
+            x = self.data.x[i]
+            y = self.data.y[i]
+            p = self.data.p[i]
+            ts = self.data.ts[i]
+            t_bin = int(ts / (self.data.ts.max() / nTimeBins))
+            if t_bin >= nTimeBins:
+                t_bin = nTimeBins - 1
+            frame[y, x, t_bin] = 1 if p else -1
+        
+        # Pad the frame to 48x48
+        padded_frame = np.zeros((48, 48))
+        # Resize the frame to 48x48
+        resized_frame = cv2.resize(frame.sum(axis=2), (48, 48))
+        padded_frame[:48, :48] = resized_frame
+        return padded_frame
+
 def read_dataset(filename):
     """Reads in the TD events contained in the N-MNIST/N-CALTECH101 dataset file specified by 'filename'"""
     f = open(filename, 'rb')
@@ -204,6 +223,7 @@ class simtbDataset(Dataset):
   def __init__(self, datasetPath, sampleFile, samplingTime, sampleLength):
     self.path = datasetPath 
     self.samples = np.load(sampleFile,allow_pickle = True)
+    self.nTimeBins    = int(sampleLength / samplingTime)
     self.classes = np.unique(self.samples[1,:])
 
   def __getitem__(self, index):
@@ -217,9 +237,37 @@ class simtbDataset(Dataset):
 
     class_code = np.where(self.classes == class_label)[0][0]
     
-    input_spikes = nib.load(input_fname)
-    input_spikes = torch.Tensor(input_spikes.get_fdata())
-    input_spikes = np.tile(input_spikes.unsqueeze(0),[2,1,1,1])
+    input_spikes_data = nib.load(input_fname).get_fdata()
+    non_zero_indices = np.nonzero(input_spikes_data)
+    non_zero_values = input_spikes_data[non_zero_indices]
+
+    original_shape = input_spikes_data.shape # (depth, height, width)
+    
+    # Create coordinates for the 5D tensor (channel, depth, height, width, time)
+    # Replicate the 3D data across the time dimension (self.nTimeBins)
+    coords_channel0 = []
+    coords_channel1 = []
+    values_channel0 = []
+    values_channel1 = []
+
+    for i in range(len(non_zero_indices[0])):
+        d, h, w = non_zero_indices[0][i], non_zero_indices[1][i], non_zero_indices[2][i]
+        val = non_zero_values[i]
+        for t in range(self.nTimeBins):
+            coords_channel0.append([0, d, h, w, t])
+            coords_channel1.append([1, d, h, w, t])
+            values_channel0.append(val)
+            values_channel1.append(val)
+
+    all_coords = np.array(coords_channel0 + coords_channel1).T
+    all_values = np.array(values_channel0 + values_channel1)
+
+    sparse_tensor_shape = torch.Size([2, original_shape[0], original_shape[1], original_shape[2], self.nTimeBins])
+
+    coords_torch = torch.from_numpy(all_coords).long()
+    values_torch = torch.from_numpy(all_values).float()
+
+    input_spikes = torch.sparse_coo_tensor(coords_torch, values_torch, sparse_tensor_shape)
     desired_class = torch.zeros((2, 1, 1, 1),dtype=torch.float32)
     desired_class[class_code,...] = 1
     # should be able to view spikes to visualize different sampling times
