@@ -7,3 +7,26 @@ models/
 report/
 simtb_ds/
 python/slayerPytorch/
+
+# Ignore data and model files
+best_unet_model.pth
+dvs_data/
+matlab/A_dc_subject_001.nii
+matlab/A_dc_subject_001_DATA.mat
+matlab/A_l_dc_subject_001_DATA.mat
+matlab/B_dc_subject_001.nii
+matlab/simtb_exp_02_accuracy.txt
+matlab/simtb_exp_02_loss.txt
+matlab/simtb_exp_1_accuracy.txt
+matlab/simtb_exp_1_loss.txt
+matlab/spike_count
+matlab/simtb/examples/*~
+
+# Ignore python cache and rubbish
+python/__pycache__/
+python/rubbish/
+
+# Ignore requirements files
+requirements.txt
+requirements_cleaned.txt
+requirements_nov.txt
