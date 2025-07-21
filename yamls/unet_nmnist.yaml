@@ -1,0 +1,11 @@
+simulation:
+    Ts: 1.0
+    tSample: 300
+    nSample: 12
+
+training:
+    num_classes: 10
+    path:
+        in:      /path/to/nmnist/
+        train:   /path/to/nmnist/train.npy
+        test:    /path/to/nmnist/test.npy

@@ -1,0 +1,11 @@
+simulation:
+    Ts: 1.0
+    tSample: 300
+    nSample: 12
+
+training:
+    num_classes: 2
+    path:
+        in:      dvs_data/Caltech101/
+        train:   numpys/trn_2c_cal_dvs.npy
+        test:    numpys/tst_2c_cal_dvs.npy
