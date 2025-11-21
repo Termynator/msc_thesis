@@ -36,11 +36,11 @@ TEST_SIZE = 0.2
 # Construct full paths
 checkpoint_path = os.path.join(MODEL_PATH, CHECKPOINT_FILE)
 
-files = [f for f in os.listdir(os.path.join(DATA_PATH, 'Caltech101')) if f.endswith('.bin')]
+files = glob.glob(os.path.join(DATA_PATH, 'Caltech101', '**', '*.bin'), recursive=True)
 labls = [f.split('_')[0] for f in files]
 
 # Adjust files to include full path
-files = [os.path.join(DATA_PATH, 'Caltech101', f) for f in files]
+
 
 trn_files, tst_files, trn_labls, tst_labls = train_test_split(files, labls, train_size=TRAIN_SIZE, random_state=SEED)
 
@@ -53,16 +53,14 @@ np.save(os.path.join(NPY_PATH, 'tst_2c_cal_dvs.npy'), tst)
 netParams = snn.params(os.path.join(YAML_PATH, '2c_caltech_dvs.yaml'))
 batch_size = 1
 
-trainingSet = caltechDataset(datasetPath  = netParams['training']['path']['in'], 
-                           sampleFile   = os.path.join(NPY_PATH, 'trn_2c_cal_dvs.npy'),
+trainingSet = caltechDataset(sampleFile   = os.path.join(NPY_PATH, 'trn_2c_cal_dvs.npy'),
                            samplingTime = netParams['simulation']['Ts'],
-                           sampleLength = netParams['simulation']['tSample']))
+                           sampleLength = netParams['simulation']['tSample'])
 trainLoader = DataLoader(dataset=trainingSet, batch_size=batch_size, shuffle=False, num_workers=4)
 
-testingSet = caltechDataset(datasetPath  = netParams['training']['path']['in'], 
-                          sampleFile   = os.path.join(NPY_PATH, 'tst_2c_cal_dvs.npy'),
+testingSet = caltechDataset(sampleFile   = os.path.join(NPY_PATH, 'tst_2c_cal_dvs.npy'),
                           samplingTime = netParams['simulation']['Ts'],
-                          sampleLength = netParams['simulation']['tSample']))
+                          sampleLength = netParams['simulation']['tSample'])
 testLoader = DataLoader(dataset=testingSet, batch_size=batch_size, shuffle=False, num_workers=4)
 
 device = torch.device('cuda')
@@ -79,7 +77,7 @@ total_training_time = 0
 
 if os.path.exists(checkpoint_path):
     print(f"Loading checkpoint from {checkpoint_path}")
-    checkpoint = torch.load(checkpoint_path)
+    checkpoint = torch.load(checkpoint_path, weights_only=False)
     net.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     stats = checkpoint['stats']
@@ -169,7 +167,7 @@ for epoch in range(start_epoch, 200):
 
 # Load best model for final evaluation
 if os.path.exists(checkpoint_path):
-    checkpoint = torch.load(checkpoint_path)
+    checkpoint = torch.load(checkpoint_path, weights_only=False)
     net.load_state_dict(checkpoint['model_state_dict'])
     stats = checkpoint['stats']
     total_training_time = checkpoint['total_training_time']

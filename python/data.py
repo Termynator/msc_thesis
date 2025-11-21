@@ -156,8 +156,7 @@ torch.set_default_tensor_type(torch.FloatTensor)
 
 # Dataset definition
 class caltechDataset(Dataset):
-  def __init__(self, datasetPath, sampleFile, samplingTime, sampleLength):
-    self.path = datasetPath 
+  def __init__(self, sampleFile, samplingTime, sampleLength):
     self.samplingTime = samplingTime
     self.samples = np.load(sampleFile,allow_pickle = True)
     self.nTimeBins    = int(sampleLength / samplingTime)
@@ -169,15 +168,23 @@ class caltechDataset(Dataset):
     class_label  = self.samples[1,index]
     class_code = list(self.classes).index(class_label)
 
-    inputSpikes = snn.io.read2Dspikes(
-                    input_index
-                    ).toSpikeTensor(torch.zeros((2, self.height, self.width, self.nTimeBins)),
-                    samplingTime=self.samplingTime)
-    desiredClass = torch.zeros((len(self.classes), 1, 1, 1))
+    events = read_dataset(input_index)
+    
+    inputSpikes = torch.zeros((2, 34, 34, self.nTimeBins))
 
-    #[batch,channel/class,dimx,dimy,spikes]
+    x, y, p, ts = events.data.x, events.data.y, events.data.p, events.data.ts
+
+    mask = (x < 34) & (y < 34)
+    x, y, p, ts = x[mask], y[mask], p[mask], ts[mask]
+
+    if ts.size > 0:
+        t_bin = (ts / (ts.max() / self.nTimeBins)).astype(int)
+        t_bin[t_bin >= self.nTimeBins] = self.nTimeBins - 1
+        inputSpikes[p.astype(int), y, x, t_bin] = 1
+
+    desiredClass = torch.zeros((len(self.classes), 1, 1, 1))
     desiredClass[class_code,...] = 1
-    # should be able to view spikes to visualize different sampling times
+    
     return inputSpikes, desiredClass, class_code
 
   def __len__(self):
@@ -262,7 +269,7 @@ class Network(torch.nn.Module):
         self.pool1 = slayer.pool(2)
         self.pool2 = slayer.pool(2)
         self.pool3 = slayer.pool(2)
-        self.fc1   = slayer.dense((6, 6, 64),self.NUM_CLASSES)
+        self.fc1   = slayer.dense((4, 4, 64),self.NUM_CLASSES)
 
     def forward(self, spikeInput):
         spikeLayer1 = self.slayer.spike(self.conv1(self.slayer.psp(spikeInput ))) # 32, 32, 16
