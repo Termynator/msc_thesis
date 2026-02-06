@@ -100,7 +100,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
-    project_root = "/disks/Programming/msc_thesis-master/"
+    project_root = ".."
     numpys_dir = os.path.join(project_root, "numpys")
 
     X_train_paths = np.load(os.path.join(numpys_dir, 'mdd_X_train.npy'))

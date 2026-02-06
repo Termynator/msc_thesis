@@ -10,7 +10,7 @@ def prepare_mdd_data():
     splits the data into training and testing sets, and saves them to .npy files.
     """
     # Define paths
-    project_root = "/disks/Programming/msc_thesis-master/"
+    project_root = ".."
     dataset_dir = os.path.join(project_root, "ds002748-1.0.5")
     participants_file = os.path.join(dataset_dir, "participants.tsv")
     output_dir = os.path.join(project_root, "numpys")
